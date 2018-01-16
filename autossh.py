@@ -198,7 +198,7 @@ if __name__ == '__main__':
     if argv_len < 2:
         print("""
         # 输入 --ips 或者 -i 查询IP列表\n
-        # 输入 --hosts 或者 -h 查询IP列表\n
+        # 输入 --hosts 或者 -h 查询HOST列表\n
         
         # 第一次连接\n
         autossh [HOSTNAME:]IP USERNAME PASSWORD [PORT]\n
