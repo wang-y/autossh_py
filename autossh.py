@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import socket
+import base64
 from telnetlib import Telnet
 from subprocess import Popen, PIPE
 
@@ -122,21 +123,21 @@ expect eof
     def query_from_ip(self, ip):
         return {'ip': ip,
                 'username': self.ip_config.get(ip, 'username'),
-                'password': self.ip_config.get(ip, 'password'),
+                'password': base64.decodestring(self.ip_config.get(ip, 'password')),
                 'port': self.ip_config.get(ip, 'port')
                 }
 
     def query_from_hostname(self, host):
         return {'ip': self.hostname_config.get(host, 'ip'),
                 'username': self.hostname_config.get(host, 'username'),
-                'password': self.hostname_config.get(host, 'password'),
+                'password': base64.decodestring(self.hostname_config.get(host, 'password')),
                 'port': self.hostname_config.get(host, 'port')
                 }
 
     def record_login_info(self, host, ip, username, password, port):
         self.ip_config.add_section(ip)
         self.ip_config.set(ip, 'username', username)
-        self.ip_config.set(ip, 'password', password)
+        self.ip_config.set(ip, 'password', base64.encodestring(password))
         self.ip_config.set(ip, 'port', port)
         with open(self.ip_config_file, 'w') as f:
             self.ip_config.write(f)
@@ -144,7 +145,7 @@ expect eof
             self.hostname_config.add_section(host)
             self.hostname_config.set(host, 'ip', ip)
             self.hostname_config.set(host, 'username', username)
-            self.hostname_config.set(host, 'password', password)
+            self.hostname_config.set(host, 'password', base64.encodestring(password))
             self.hostname_config.set(host, 'port', port)
             with open(self.hostname_config_file, 'w') as f:
                 self.hostname_config.write(f)
