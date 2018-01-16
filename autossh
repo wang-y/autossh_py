@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python $AUTOSSH_ROOT/bin/autossh.py $@
