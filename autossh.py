@@ -197,9 +197,24 @@ if __name__ == '__main__':
     argv_len = len(sys.argv)
     if argv_len < 2:
         print("""
-        输入 --ips 或者 -i 查询IP列表\n
-        输入 --hosts 或者 -h 查询IP列表\n
-        输入 [hostname:]ip username password port 连接服务器并储存\n
+        # 输入 --ips 或者 -i 查询IP列表\n
+        # 输入 --hosts 或者 -h 查询IP列表\n
+        
+        # 第一次连接\n
+        autossh [HOSTNAME:]IP USERNAME PASSWORD [PORT]\n
+        
+        # HOSTNAME 可选参数
+        # PORT 可选参数，默认 22
+        
+        # 再次连接
+        autossh IP
+        
+        # 如果有HOSTNAME,再次连接
+        autossh HOSTNAME
+        
+        # 如果之前连接没有添加HOSTNAME，那么可以
+        autossh HOSTNAME:IP
+        
         """)
         sys.exit(1)
     temp = sys.argv[1]
