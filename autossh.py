@@ -167,7 +167,7 @@ expect eof
         return hostname_config_file
 
     @staticmethod
-    def _print_ip_list():
+    def print_ip_list():
         config = ConfigParser()
         autossh_home = os.getenv('AUTOSSH_ROOT')
         if not autossh_home:
@@ -178,9 +178,10 @@ expect eof
         print ('IP LIST:\n')
         for ip in secs:
             print(ip+'\t@'+config.get(ip,'username'))
+        sys.exit(1)
 
     @staticmethod
-    def _print_hostname_list():
+    def print_hostname_list():
         config = ConfigParser()
         autossh_home = os.getenv('AUTOSSH_ROOT')
         if not autossh_home:
@@ -191,17 +192,54 @@ expect eof
         print('HOST LIST:\n')
         for host in secs:
             print(host+':'+config.get(host,'username')+'@'+config.get(host,'ip')+'\n')
+        sys.exit(1)
+
+    @staticmethod
+    def remove_config(arrays):
+        autossh_home = os.getenv('AUTOSSH_ROOT')
+
+        ipconfig = ConfigParser()
+        ip_config_file = os.path.join(autossh_home, 'ip_config.ini')
+        ipconfig.read(ip_config_file)
+
+        hostconfig = ConfigParser()
+        hostname_config_file = os.path.join(autossh_home, 'hostname_config.ini')
+        hostconfig.read(hostname_config_file)
+
+        for str in arrays:
+            if re.search(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', str):
+                ipconfig.remove_section(str)
+                with open(ip_config_file, 'w') as f:
+                    ipconfig.write(f)
+                secs=hostconfig.sections()
+                for h in secs:
+                    if hostconfig.get(h,'ip') == str:
+                        hostconfig.remove_section(h)
+                        with open(hostname_config_file, 'w') as f:
+                            hostconfig.write(f)
+                        break
+                    else:
+                        continue
+            else:
+                _ip=hostconfig.get(str,'ip')
+                ipconfig.remove_section(_ip)
+                with open(ip_config_file, 'w') as f:
+                    ipconfig.write(f)
+                hostconfig.remove_section(str)
+                with open(hostname_config_file, 'w') as f:
+                    hostconfig.write(f)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
     argv_len = len(sys.argv)
     if argv_len < 2:
         print("""
-        # 输入 --ips 或者 -i 查询IP列表\n
-        # 输入 --hosts 或者 -h 查询HOST列表\n
+        # 输入 --ips 或者 -i 查询IP列表
+        # 输入 --hosts 或者 -h 查询HOST列表
         
-        # 第一次连接\n
-        autossh [HOSTNAME:]IP USERNAME PASSWORD [PORT]\n
+        # 第一次连接
+        autossh [HOSTNAME:]IP USERNAME PASSWORD [PORT]
         
         # HOSTNAME 可选参数
         # PORT 可选参数，默认 22
@@ -215,14 +253,26 @@ if __name__ == '__main__':
         # 如果之前连接没有添加HOSTNAME，那么可以
         autossh HOSTNAME:IP
         
+        #删除host或ip
+        autossh --remove hostname/ip 或者 autossh -r hostname/ip
         """)
         sys.exit(1)
     temp = sys.argv[1]
     autossh = AUTOSSH()
     if temp == "--ips" or temp == "-i":
-        autossh._print_ip_list()
+        autossh.print_ip_list()
     elif temp == "--hosts" or temp == "-h":
-        autossh._print_hostname_list()
+        autossh.print_hostname_list()
+    elif temp == "--remove" or temp == "-r":
+        if argv_len < 3:
+            print("请输入 想要移除的hostname或者ip!")
+            sys.exit(1)
+        else :
+            arrays=sys.argv
+            del arrays[0]
+            del arrays[0]
+            autossh.remove_config(arrays)
+            sys.exit(1)
     else:
         arr = temp.split(":")
         if len(arr) == 1:
@@ -235,17 +285,16 @@ if __name__ == '__main__':
         elif len(arr) == 2:
             hostname = arr[0]
             ip = arr[1]
-
-        if argv_len > 4:
-            username = sys.argv[2]
-            password = sys.argv[3]
-            port = sys.argv[4]
-        elif argv_len > 3:
-            username = sys.argv[2]
-            password = sys.argv[3]
-            port = '22'
-        else:
-            username = None
-            password = None
-            port = '22'
-        autossh.run(hostname, ip, username, password, port)
+    if argv_len > 4:
+        username = sys.argv[2]
+        password = sys.argv[3]
+        port = sys.argv[4]
+    elif argv_len > 3:
+        username = sys.argv[2]
+        password = sys.argv[3]
+        port = '22'
+    else:
+        username = None
+        password = None
+        port = '22'
+    autossh.run(hostname, ip, username, password, port)
