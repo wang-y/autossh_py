@@ -1,6 +1,8 @@
 autossh
 ======
 
+下载地址： https://github.com/wang-y/autossh_py/archive/v0.0.1.tar.gz
+
 用python完成的一个简单的基于expect链接远程主机的工具，只用首次连接时输入相关的登录信息（IP地址、用户名、密码、端口）
 过后只需通过指定HOSTNAME/IP即可
 
